@@ -14,6 +14,8 @@ import com.hrauf.util.HRShape;
 import com.hrauf.util.ParseDrawingVectorString;
 import com.hrauf.util.XMLArrayList;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -23,6 +25,7 @@ import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.Timer;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
@@ -30,8 +33,12 @@ import org.xml.sax.SAXException;
  *
  * @author Hammad
  */
-public class DrawingPanel extends javax.swing.JApplet {
-    private String  userID = null;
+public class DrawingPanel extends javax.swing.JApplet implements ActionListener {
+
+    private Timer timerMessage;
+    public static final int timerMessageInterval = 4000; //In milliseconds
+    private String userID = null;
+
     /**
      * Initializes the applet DrawingPanel
      */
@@ -69,11 +76,11 @@ public class DrawingPanel extends javax.swing.JApplet {
          */
         try {
             java.awt.EventQueue.invokeAndWait(new Runnable() {
-
                 public void run() {
                     initComponents();
                 }
             });
+            timerMessage = new Timer(timerMessageInterval, this);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -322,8 +329,8 @@ private void jtbGreenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     }//GEN-LAST:event_jtbCurveActionPerformed
 
     private void jbSaveVectorFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbSaveVectorFileActionPerformed
- /* Implementation for Non-Web application use.
-  * final JFileChooser fc =
+        /* Implementation for Non-Web application use.
+         * final JFileChooser fc =
          * new JFileChooser(); int returnVal = fc.showSaveDialog(this); if
          * (returnVal == JFileChooser.APPROVE_OPTION) { File file =
          * fc.getSelectedFile(); InputStream is =
@@ -354,49 +361,53 @@ private void jtbGreenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
          * Logger.getLogger(DrawingPanel.class.getName()).log(Level.SEVERE,
          * null, ex); } } } //end-if
          */
+        String decodedString = null;
         userID = getParameter("userID");
         String vs = scribblePanel1.vectorStringsOut();
         URL connectAppletURL = null;
         URLConnection urlConnection = null;
         ObjectOutputStream objOut = null;
         this.jtxtMessage.setText("");
-        
+
         try {
 //        connectAppletURL = new URL(getCodeBase().toString() + "ServletConnectApplet2.strut");    
-    ////    String stringToReverse = URLEncoder.encode("<Gurya /> </Raani>", "UTF-8");
-       //// String stringToReverse = URLEncoder.encode(vs, "UTF-8");
-        //connectAppletURL = new URL("http://localhost:8084/StrutsSchoolWeb/"+"ServletConnectApplet2.strut");
-        connectAppletURL = new URL(getCodeBase().toString()+"ServletConnectApplet2.strut");
-        urlConnection = connectAppletURL.openConnection();
-		System.out.println("Connection Opened");
-        urlConnection.setDoOutput(true);
-       System.out.println("Do Output-true");
-		urlConnection.setDoInput(true);
-		System.out.println("Do Input-true");
-        OutputStreamWriter out = new OutputStreamWriter(urlConnection.getOutputStream());
-        System.out.println("Output Stream Writer: About to write the string");
-        String s = "userID="+URLEncoder.encode(userID, "UTF-8")+"&vXML=" + URLEncoder.encode(vs, "UTF-8");
-        System.out.println(s);
-        out.write(s);
-	System.out.println("Output Stream Writer: About to close output stream");
-        out.flush();
-        out.close();
-        System.out.println("Output Stream Writer: Closed");
-	System.out.println("InputStream: about to open");
-        BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-	System.out.println("InputStream: Opened");							
-        String decodedString;
-        while ((decodedString = in.readLine()) != null) {
-           System.out.println("STRING FROM SERVER: "+ decodedString);
-            // this.jtxtMessage.setText("STRING FROM SERVER: "+ decodedString);
-            // getCodeBase().toString() + "ServletConnectApplet2.strut";
-            this.jtxtMessage.setText("SERVER RESPONSE: "+ decodedString+"-"+getCodeBase().toString());
-        }
-        in.close();
-		System.out.println("InputStream Closed");
+            ////    String stringToReverse = URLEncoder.encode("<Gurya /> </Raani>", "UTF-8");
+            //// String stringToReverse = URLEncoder.encode(vs, "UTF-8");
+            //connectAppletURL = new URL("http://localhost:8084/StrutsSchoolWeb/"+"ServletConnectApplet2.strut");
+            connectAppletURL = new URL(getCodeBase().toString() + "ServletConnectApplet2.strut");
+            urlConnection = connectAppletURL.openConnection();
+            System.out.println("Connection Opened");
+            urlConnection.setDoOutput(true);
+            System.out.println("Do Output-true");
+            urlConnection.setDoInput(true);
+            System.out.println("Do Input-true");
+            OutputStreamWriter out = new OutputStreamWriter(urlConnection.getOutputStream());
+            System.out.println("Output Stream Writer: About to write the string");
+            String s = "userID=" + URLEncoder.encode(userID, "UTF-8") + "&vXML=" + URLEncoder.encode(vs, "UTF-8");
+            System.out.println(s);
+            out.write(s);
+            System.out.println("Output Stream Writer: About to close output stream");
+            out.flush();
+            out.close();
+            System.out.println("Output Stream Writer: Closed");
+            System.out.println("InputStream: about to open");
+            BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            System.out.println("InputStream: Opened");
+            while ((decodedString = in.readLine()) != null) {
+                System.out.println("STRING FROM SERVER: " + decodedString);
+                // this.jtxtMessage.setText("STRING FROM SERVER: "+ decodedString);
+                // getCodeBase().toString() + "ServletConnectApplet2.strut";
+                this.showMessage("SERVER RESPONSE: " + decodedString + "-" + getCodeBase().toString());
+                // this.jtxtMessage.setText("SERVER RESPONSE: "+ decodedString+"-"+getCodeBase().toString());
+            }
+            in.close();
+            System.out.println("InputStream Closed");
 
         } catch (Exception ex) {
-              Logger.getLogger(DrawingPanel.class.getName()).log(Level.SEVERE, null, ex);          
+            Logger.getLogger(DrawingPanel.class.getName()).log(Level.WARNING, null, ex);
+            if ((decodedString == null) || (decodedString.isEmpty())) {
+                this.showMessage("NOT SAVED. Try 1) Clear, and then 2) Draw fewer strokes....");
+            }
         } finally {
             // objOut = null;
         }
@@ -408,25 +419,84 @@ private void jtbGreenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
          */
     }//GEN-LAST:event_jbSaveVectorFileActionPerformed
 
+    @Override
+    public void actionPerformed(ActionEvent e) {
+//ActionListener interface is covering: timerMessage
+        this.jtxtMessage.setText("");
+        timerMessage.stop();
+    }
+
+    public void showMessage(String msg) {
+        this.jtxtMessage.setText(msg);
+        timerMessage.start();
+    }
+
 private void jbLoadVectorFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbLoadVectorFileActionPerformed
-    final JFileChooser fc = new JFileChooser();
-    InputStream is = null;
-    int returnVal = fc.showOpenDialog(this);
-    if (returnVal == JFileChooser.APPROVE_OPTION) {
-        File file = fc.getSelectedFile();
-        try {
-            is = new FileInputStream(file);
-            scribblePanel1.setVectorImageInputStream(is);
-        } catch (IOException ex) {
-            Logger.getLogger(DrawingPanel.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                is.close();
-            } catch (IOException ex) {
-                Logger.getLogger(DrawingPanel.class.getName()).log(Level.SEVERE, null, ex);
-            }
+    /* File based implementation - start
+     final JFileChooser fc = new JFileChooser();
+     InputStream is = null;
+     int returnVal = fc.showOpenDialog(this);
+     if (returnVal == JFileChooser.APPROVE_OPTION) {
+     File file = fc.getSelectedFile();
+     try {
+     is = new FileInputStream(file);
+     scribblePanel1.setVectorImageInputStream(is);
+     } catch (IOException ex) {
+     Logger.getLogger(DrawingPanel.class.getName()).log(Level.SEVERE, null, ex);
+     } finally {
+     try {
+     is.close();
+     } catch (IOException ex) {
+     Logger.getLogger(DrawingPanel.class.getName()).log(Level.SEVERE, null, ex);
+     }
+     }
+     } // end of if command
+     * File based implementation - end
+     */
+    this.scribblePanel1.clear();
+    String decodedString = null;
+    userID = getParameter("userID");
+    String vs = "";
+    char[] cbuf = new char[16];
+    StringBuffer sb = new StringBuffer();
+    URL connectAppletURL = null;
+    URLConnection urlConnection = null;
+    this.jtxtMessage.setText("");
+
+    try {
+        String uriBase = getCodeBase().toString() + "ServletConnectApplet2.strut";
+        String uriQuery = "userID=" + URLEncoder.encode(userID, "UTF-8") + "&dCaption=" + URLEncoder.encode("Caption Drawing 1", "UTF-8");
+        connectAppletURL = new URL(uriBase + "?" + uriQuery);
+        urlConnection = connectAppletURL.openConnection();
+        urlConnection.setRequestProperty("Accept-Charset", "UTF-8");
+        System.out.println("Connection Opened");
+        urlConnection.setDoOutput(true);
+        System.out.println("Do Output-true");
+        urlConnection.setDoInput(true);
+        System.out.println("Do Input-true");
+        InputStreamReader inn = new InputStreamReader(urlConnection.getInputStream());
+        System.out.println("Input Stream Reader: About to read the string");
+        while (inn.read(cbuf) != -1)
+            sb.append(cbuf);
+        vs = sb.toString();
+        System.out.println(vs);
+        //this.scribblePanel1.vectorStringsIn(vs);
+        InputStream is = new ByteArrayInputStream(vs.getBytes());
+        this.scribblePanel1.setVectorImageInputStream(is);
+        this.showMessage("SERVER RESPONSE: " + "Drawing found.");
+        System.out.println("Input Stream Reader: About to close input stream");
+        inn.close();
+        System.out.println("Input Stream Reader: Closed");
+    } catch (Exception ex) {
+        Logger.getLogger(DrawingPanel.class.getName()).log(Level.WARNING, null, ex);
+        if ((decodedString == null) || (decodedString.isEmpty())) {
+            this.showMessage("NOT FOUND. Try 1) Drawing a picture 2) Press Save button 3) Then you can load.");
         }
-    } // end of if command
+    } finally {
+    }
+    /*
+     * End Web Implementation
+     */
 }//GEN-LAST:event_jbLoadVectorFileActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup bgroupColors;

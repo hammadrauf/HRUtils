@@ -79,8 +79,6 @@ public class ScribblePanel extends javax.swing.JPanel
     private boolean bgImageProvided = false;
     private HRShape.SupportedShapes shape = HRShape.SupportedShapes.PEN;
 
-
-
     public static enum PenType {
 
         DRAW, DELETE_SELECTED, LOCKED
@@ -152,8 +150,9 @@ public class ScribblePanel extends javax.swing.JPanel
     }
 
     /**
-     * Extracts the vector drawing in a text string. Syntax at this time is to-string method based.
-     * 
+     * Extracts the vector drawing in a text string. Syntax at this time is
+     * to-string method based.
+     *
      * @return String containing description of drawing.
      */
     public String vectorStringsOut() {
@@ -163,21 +162,22 @@ public class ScribblePanel extends javax.swing.JPanel
         sb.append(this.getHeight()).append("\" />\n");
         sb.append(pathCollection.toString());
         sb.append(" </HRdrawing2D>\n");
-        return(sb.toString());
+        return (sb.toString());
     }
+
     /**
-     * This method will read as input a string containing vector shape instruction. Syntax to be decided yet. This feature is not implemented at this time.
-     * 
+     * This method will read as input a string containing vector shape
+     * instruction. Syntax to be decided yet. This feature is not implemented at
+     * this time.
+     *
      * @param In It is a string containing the vector shape instructions.
      * @throws InvalidSyntaxException
-     * @throws NotImplementedException 
+     * @throws NotImplementedException
      */
     public void vectorStringsIn(String In) throws InvalidSyntaxException, NotImplementedException {
         throw new NotImplementedException("Vector Strings Input - feature is not implemented.");
     }
 
-    
-    
     /**
      * Set the value of scribblePenType
      *
@@ -242,13 +242,13 @@ public class ScribblePanel extends javax.swing.JPanel
         super.setSize(d);
         this.initialize();
     }
-    
+
     @Override
     public void setPreferredSize(Dimension d) {
         super.setPreferredSize(d);
         this.initialize();
-    }    
-    
+    }
+
     public File getImgFile() {
         return imgFile;
     }
@@ -268,8 +268,8 @@ public class ScribblePanel extends javax.swing.JPanel
      */
     public ScribblePanel(LayoutManager layoutManager, boolean boole) {
         super(layoutManager, boole);
-      //  this.setDoubleBuffered(boole);
-      //  this.setLayout(layoutManager);
+        //  this.setDoubleBuffered(boole);
+        //  this.setLayout(layoutManager);
         initialize();
     }
 
@@ -278,7 +278,7 @@ public class ScribblePanel extends javax.swing.JPanel
      */
     public ScribblePanel(LayoutManager layoutManager) {
         super(layoutManager);
-   //     this.setLayout(layoutManager);
+        //     this.setLayout(layoutManager);
         initialize();
     }
 
@@ -287,7 +287,7 @@ public class ScribblePanel extends javax.swing.JPanel
      */
     public ScribblePanel(boolean boole) {
         super(boole);
-    //    this.setDoubleBuffered(boole);
+        //    this.setDoubleBuffered(boole);
         initialize();
     }
 
@@ -496,9 +496,12 @@ public class ScribblePanel extends javax.swing.JPanel
                     } else if (point3 == null) {
                         point3 = new Point2D.Double(e.getX(), e.getY());
                     } else {
-                        currPath.penCurveTo(point2.x, point2.y, point3.x, point3.y, e.getX(), e.getY());
-                        point2 = null;
-                        point3 = null;
+                        //Following condition check is added to avoid duplicate(repeated) Curves on the same point.
+                        if ((currPath.getCurrPointX() != e.getX()) || (currPath.getCurrPointY() != e.getY())) {
+                            currPath.penCurveTo(point2.x, point2.y, point3.x, point3.y, e.getX(), e.getY());
+                            point2 = null;
+                            point3 = null;
+                        }
                     }
                 }
                 break;
@@ -724,11 +727,11 @@ public class ScribblePanel extends javax.swing.JPanel
     public void addDimensions(int width, int height) {
         this.setSize(width, height);
     }
-    
+
     public void addCompleteShape(HRShape s) {
         this.pathCollection.add(s);
     }
-    
+
     /**
      * This is the method defined by the Printable interface. It prints the
      * panel to the specified Graphics object, respecting the paper size and
@@ -1148,9 +1151,9 @@ public class ScribblePanel extends javax.swing.JPanel
         InputStream is = new ByteArrayInputStream(os.toByteArray());
         return is;
     }
-    
-     public InputStream getVectorImageInputStream() {
-         InputStream in = null;
+
+    public InputStream getVectorImageInputStream() {
+        InputStream in = null;
         try {
             in = new ByteArrayInputStream(this.vectorStringsOut().getBytes("UTF-8"));
         } catch (UnsupportedEncodingException ex) {
@@ -1158,19 +1161,17 @@ public class ScribblePanel extends javax.swing.JPanel
         }
         return in;
     }
-     
+
     public void setVectorImageInputStream(InputStream is) {
         ParseDrawingVectorString pdvs = new ParseDrawingVectorString(this);
         try {
             pdvs.parse(is);
         } catch (IOException ioe) {
             Logger.getLogger(ScribblePanel.class.getName()).log(Level.SEVERE, null, ioe);
-        }
-        catch (SAXException sae) {
+        } catch (SAXException sae) {
             Logger.getLogger(ScribblePanel.class.getName()).log(Level.SEVERE, null, sae);
-        }
-        catch (ParserConfigurationException pce) {
+        } catch (ParserConfigurationException pce) {
             Logger.getLogger(ScribblePanel.class.getName()).log(Level.SEVERE, null, pce);
         }
-    } 
+    }
 }
